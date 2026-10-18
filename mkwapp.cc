@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <cstdlib>
+#include <cstring>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -19,6 +20,23 @@ int main(int argc, char* argv[]) {
 	if (argc < 2) {
 		std::cerr << "usage: mkwapp <url>\n";
 		return 1;
+	}
+
+	if (strcmp(argv[1], "-r") == 0 && argc > 2) {
+		const char* homeenv = std::getenv("HOME");
+		fs::path homedir(homeenv);
+
+		std::string rmname = argv[2];
+		fs::path entry = homedir / ".local" / "share" / "applications" / (rmname + ".desktop");
+		
+		if (fs::exists(entry)) {
+			if (fs::remove(entry)) { std::cout << "done\n"; return 0; }
+			else { std::cout << "couldnt remove app\n"; return 1; }
+		}
+		else {
+			std::cout << "file not found\n";
+			return 1;
+		}
 	}
 
 	std::string tarurl = argv[1];
@@ -95,6 +113,6 @@ int main(int argc, char* argv[]) {
 		std::cerr << "couldnt set executable perms: " << e.what() << "\n";
 	}
 
-	std::cout << "done";
+	std::cout << "done\n";
 	return 0;
 }
